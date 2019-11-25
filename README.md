@@ -1,3 +1,3 @@
 # BitCake Studio
 
-## [/ssh](SSH Config)
+## [ssh](SSH Config)

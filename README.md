@@ -1,3 +1,4 @@
 # BitCake Studio
 
-## [SSH Config](ssh)
+## Index
+- [ssh](ssh)

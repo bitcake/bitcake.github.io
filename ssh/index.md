@@ -4,6 +4,8 @@
 
 `File > Configure SSH Keys...`
 
+(fork.png)[]
+
 ## Importar a chave no Github
 
 - Abre a chave que tem a extensão `.pub` e copia todo o seu conteúdo

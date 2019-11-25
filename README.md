@@ -1,3 +1,3 @@
 # BitCake Studio
 
-## [ssh/index.md](SSH Config)
+## [SSH Config](ssh)

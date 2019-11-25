@@ -1,2 +1,3 @@
-# tutorials
-BitCake Tutorials
+# BitCake Studio
+
+## [/ssh](SSH Config)

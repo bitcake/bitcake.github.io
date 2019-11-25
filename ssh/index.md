@@ -4,7 +4,7 @@
 
 `File > Configure SSH Keys...`
 
-(fork.png)[]
+[fork.png]()
 
 ## Importar a chave no Github
 

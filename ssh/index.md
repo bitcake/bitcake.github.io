@@ -4,7 +4,7 @@
 
 `File > Configure SSH Keys...`
 
-[fork.png]()
+![Fork](fork.png)
 
 ## Importar a chave no Github
 
@@ -16,8 +16,12 @@
 - Cole o conteúdo do arquivo `.pub` no campo `Key`
 - `Add SSH key`
 
+![Add SSH Key](add-key.png)
+
 ## Clone por SSH
 
 Ao clonar um repositório novo, agora você pode usar a url que usa SSH.
 
 De resto, o git funciona normalmente
+
+![Clone](clone.png)

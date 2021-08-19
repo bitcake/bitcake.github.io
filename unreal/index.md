@@ -9,6 +9,7 @@ Pra isso vamos instalar o Visual Studio Community que é a versão gratuita que 
 - Acesse https://visualstudio.microsoft.com/vs/community/ e clique no botão de 'Download'
 - Execute o `vs_Community.exe` baixado
 - Depois que carregar a interface, vá para a aba "Individual Components"
+- Marque ".NET Framework 4.6.2 SDK"
 - Marque ".NET Framework 4.6.2 Targeting Pack"
 - Procure por uma entrada parecida com "MSVC VS-2019 C++ x64/x86 build tools (Latest)" e marque-a
 - Marque o "Windows 10 SDK" com a maior versão

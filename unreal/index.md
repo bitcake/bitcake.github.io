@@ -11,8 +11,11 @@ Pra isso vamos instalar o Visual Studio Community que é a versão gratuita que 
 - Depois que carregar a interface, vá para a aba "Individual Components"
 - Marque ".NET Framework 4.6.2 SDK"
 - Marque ".NET Framework 4.6.2 Targeting Pack"
+- ![.net framework](visual-studio-net-framework.png)
 - Procure por uma entrada parecida com "MSVC VS-2019 C++ x64/x86 build tools (Latest)" e marque-a
+- ![msvc](visual-studio-msvc.png)
 - Marque o "Windows 10 SDK" com a maior versão
+- ![windows-sdk](visual-studio-windows-sdk.png)
 - "Install"
 - Se aparecer uma tela tentando te convencer a instalar um "Workload" você pode simplesmente clicar em "Continue"
 - Aguarde bastante (demora mesmo)
@@ -24,6 +27,6 @@ Parabéns, você agora tem o Visual Studio instalado no PC e alguns gigas livres
 Finalmente podemos compilar o projeto!
 - *Fechar* o editor da Unreal
 - Atualizar o repositório
-- Rodar o `build.bat` que fica na raiz do projeto (junto do `.uproject`)
+- Dois cliques no `open.bat` que fica na raiz do projeto (junto do `.uproject`)
   - Se tiver erro de compilação, culpe algum programador!
-- Re-abrir o editor da Unreal e trabalhar normalmente
+  - Dando tudo certo, o console que abriu deve sumir e logo depois o editor da Unreal abre

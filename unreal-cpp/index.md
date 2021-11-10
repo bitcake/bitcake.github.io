@@ -5,6 +5,13 @@ Um guia de sobrevivência para programadores C++ em Unreal.
 Lembrando que isso não substitui ler a documentação da Unreal (e às vezes até mesmo o código fonte também),
 mas é um bom começo.
 
+# Coisinhas de C++
+
+## `#include "SomeHeaderFile.h"`
+
+
+# Coisinhas de Unreal
+
 ## `UPROPERTY()`
 Marca um campo como uma propriedade que a Unreal entende.
 Pode ter vários sub-atributos que extendem a semântica da propriedade.
@@ -58,11 +65,15 @@ Manda uma mensagem de um client para o servidor.
 - Se chamada no servidor, a implementação é executada no servidor
 - Se chamada no client, a implementação é executada no servidor
 
-#### `UFUNCTION(Client, Reliable|Unreliable)`
-Manda uma mensagem do servidor para o client que é dono do Pawn onde foi chamada a função. Não muito comum na prática.
+Essas fuções têm o prefixo `Server` por padrão.
 
-- Se chamada no servidor, a implementação é executada no client dono do Pawn
+#### `UFUNCTION(Client, Reliable|Unreliable)`
+Manda uma mensagem do servidor para o client que é dono do Actor onde foi chamada a função. Não muito comum na prática.
+
+- Se chamada no servidor, a implementação é executada no client dono do Actor
 - Se chamada no client, a implementação é executada no mesmo client
+
+Essas fuções têm o prefixo `Client` por padrão.
 
 #### `UFUNCTION(NetMulticast, Reliable|Unreliable)`
 Manda uma mensagem do servidor para todos os clients.
@@ -70,13 +81,37 @@ Manda uma mensagem do servidor para todos os clients.
 - Se chamada no servidor, a implementação é executada no servidor e em todos os clients
 - Se chamada no client, a implementação é executada no mesmo client
 
+Essas fuções têm o prefixo `Multicast` por padrão.
+
+Ex:
+```cpp
+// .h
+UFUNCTION(NetMulticast, Reliable)
+void MulticastSayHi();
+
+// .cpp
+void AMyActor::BeginPlay()
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		// apenas o servidor manda a mensagem
+		MulticastSayHi();
+	}
+}
+
+void AMyActor::MulticastSayHi_Implementation()
+{
+	// executado no servidor e em todos os clients
+	if (GEngine != nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("HI!"));
+	}
+}
+```
 
 --------------------
 
 ## topicos
-- RPCs
-	- Server, Client, NetMulticast
-	- `_Implementation()`
 - #include
 	- processo de compilação c++
 	- minimizar include em .h

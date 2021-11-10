@@ -18,7 +18,8 @@ Portanto, se a gente consegue reduzir o quanto de outros arquivos os `.h` inclue
 
 Então o truque para ter builds rápidas é abusar de _forward declarations_* e incluir o mínimo possível nos `.h`.
 
-* _forward declaration_ é quando você define apenas o nome de um tipo (em geral classe) para usar um ponteiro daquele
+### _forward declaration_
+É quando você define apenas o nome de um tipo (em geral classe) para usar um ponteiro daquele
 tipo ao inves da declaração completa. Isso funciona porque para declarar um ponteiro, o compilador apenas precisa saber
 o nome do tipo já que todos os ponteiros têm o mesmo tamanho.
 
@@ -31,11 +32,11 @@ Ex:
 // `class UBoxComponent* MyVar;`
 
 UCLASS()
-class AMyActor
+class AMyActor : AActor
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* PhysicsBodyComponent;
 }
 
@@ -47,6 +48,51 @@ public:
 // pois provavelmente iremos usar algum método
 // seu por aqui
 ```
+
+### _static free functions_
+Essas são funções que não pertencem a uma classe e que apenas existem em um `.cpp`.
+Se você tem um método privado em sua classe que não precisa acessar variáveis privadas,
+considere transformá-lo em uma _static free function_ que é menos código que precisa
+ser declarado no `.h`.
+
+Ex:
+```cpp
+// .h
+UCLASS()
+class AMyActor : AActor
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+	FString MyName;
+}
+
+// .cpp
+// função utilitária que só é usada nesse .cpp
+// e apenas acessa campos que já são publicos
+// poupa uma declaração privada que 'sujaria' no .h
+static void PrintMyActorName(const AMyActor* Self)
+{
+	if (GEngine != nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			0.0f,
+			FColor::Red,
+			Self->MyName
+		);
+	}
+}
+
+void AMyActor::BeginPlay()
+{
+	Super::BeginPlay();
+	PrintMyActorName(this);
+}
+```
+
+## Ponteiros*
+
 
 # Coisinhas de Unreal
 
@@ -84,9 +130,29 @@ void AMyActor::BeginPlay()
 }
 ```
 
+### `UPROPERTY(EditAnywhere)`
+Permite uma propriedade ser editada tanto no editor como através de uma Blueprint.
+
+### `UPROPERTY(VisibleAnywhere)`
+Permite uma propriedade ser visualizada (somente leitura) tanto pelo editor como por uma Blueprint.
+
+### `UPROPERTY(EditAnywhere, BlueprintReadOnly)`
+Faz uma property ser editável no editor, porém uma Blueprint somente tem acesso de leitura.
+
 ## `UFUNCTION()`
 Marca uma função para ser reconhecida pela Unreal.
 Também pode ter vários sub-atributos que extendem a semântica da função.
+
+### `UFUNCTION(BlueprintCallable)`
+Permite uma função ser chamável por blueprint.
+
+### `UFUNCTION(BlueprintPure)`
+Permite uma função ser chamável por blueprint, porém como uma função que não tem efeitos colaterais (ex: muda estado, faz IO).
+É recomendável que tal função seja marcada como `const`.
+
+### `UFUNCTION(BlueprintImplementableEvent)`
+Tais funções são implementadas *apenas* por Blueprints e nunca por C++.
+Útil para definir eventos que são ouvidos apenas pela Blueprint que irá herdar de nossa classe C++.
 
 ### RPCs
 RPCs são `UFUNCTION()` especiais que servem para trocar mensagens entre servidor e clientes.
@@ -174,8 +240,6 @@ void AMyActor::MulticastSayHi_Implementation()
 	- TArray com alocador geral e inline
 	- usar array simples quando possivel
 	- TArrayView
-- static
-	- static function
 - declarações
 	- construtores
 		- stack, copy, etc

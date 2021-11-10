@@ -8,7 +8,45 @@ mas é um bom começo.
 # Coisinhas de C++
 
 ## `#include "SomeHeaderFile.h"`
+Para o compilador C++, um arquivo ter extensão `.h` ou `.cpp` ou `.macaco` não faz diferença.
+O que acontece por trás dos panos é que o compilador vai processar individualmente (em geral em paralelo) cada
+arquivo fonte que a gente passa pra ele (por convenção, os `.cpp`) que, por sua vez, pode incluir outros arquivos
+(por convenção, os `.h`).
 
+O que isso implica é que a princípio cada unidade de compilação são os `.cpp` individuais mais os `.h` que ele inclui.
+Portanto, se a gente consegue reduzir o quanto de outros arquivos os `.h` incluem, menos retrabalho o compilador precisa fazer.
+
+Então o truque para ter builds rápidas é abusar de _forward declarations_* e incluir o mínimo possível nos `.h`.
+
+* _forward declaration_ é quando você define apenas o nome de um tipo (em geral classe) para usar um ponteiro daquele
+tipo ao inves da declaração completa. Isso funciona porque para declarar um ponteiro, o compilador apenas precisa saber
+o nome do tipo já que todos os ponteiros têm o mesmo tamanho.
+
+Ex:
+```cpp
+// .h
+
+// aqui a gente não inclui "BoxComponent.h"
+// apenas declara seus ponteiros como
+// `class UBoxComponent* MyVar;`
+
+UCLASS()
+class AMyActor
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UBoxComponent* PhysicsBodyComponent;
+}
+
+// .cpp
+#include "MyActor.h"
+#include "Components/BoxComponent.h"
+
+// já no cpp precisamos incluir o arquivo
+// pois provavelmente iremos usar algum método
+// seu por aqui
+```
 
 # Coisinhas de Unreal
 
@@ -31,16 +69,18 @@ Uma propriedade `Transient` significa que ela não é serializada. Isso é: ela 
 Ex:
 ```cpp
 // .h
+// valor vem da blueprint que herda da classe
 UPROPERTY(Transient)
-UMovementComponent* MovementComponent; // valor vem da blueprint que herda da classe
+UMovementComponent* MovementComponent;
 
 // .cpp
 void AMyActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// propriedade sempre inicializado
-	MovementComponent = (UMovementComponent*)FindComponentByClass(UMovementComponent::StaticClass());
+	// propriedade sempre inicializada
+	MovementComponent = (UMovementComponent*)
+		FindComponentByClass(UMovementComponent::StaticClass());
 }
 ```
 
@@ -104,7 +144,12 @@ void AMyActor::MulticastSayHi_Implementation()
 	// executado no servidor e em todos os clients
 	if (GEngine != nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("HI!"));
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			0.0f,
+			FColor::Red,
+			TEXT("HI!")
+		);
 	}
 }
 ```
@@ -112,10 +157,6 @@ void AMyActor::MulticastSayHi_Implementation()
 --------------------
 
 ## topicos
-- #include
-	- processo de compilação c++
-	- minimizar include em .h
-		- class T*
 - recap ponteiros
 	- "stale pointer"
 		- casos comuns

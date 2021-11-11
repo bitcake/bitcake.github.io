@@ -305,7 +305,9 @@ Uma propriedade `Transient` significa que ela não é serializada. Isso é: ela 
 Ex:
 ```cpp
 // .h
-// valor vem da blueprint que herda da classe
+// Nesse caso hipotético, o componente é definido na
+// Blueprint que herda de nossa classe. No begin play,
+// nós enfim procuramos pelo componente
 UPROPERTY(Transient)
 UMovementComponent* MovementComponent;
 
@@ -314,7 +316,7 @@ void AMyActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// propriedade sempre inicializada
+	// A propriedade é *sempre* inicializada
 	MovementComponent = (UMovementComponent*)
 		FindComponentByClass(UMovementComponent::StaticClass());
 }

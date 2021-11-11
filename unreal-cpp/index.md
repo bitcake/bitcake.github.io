@@ -205,6 +205,17 @@ bool AMyActor::IsAlive() const
 Quando lendo código, `const` diminui a quantidade de coisas a serem consideradas e, portanto, facilitam sua compreensão.
 
 ```cpp
+uint32* HealthPtr = &MyActor->Health;
+UE_LOG(LogTemp, Display, TEXT("health: %d"), *HealthPtr);
+// health = 10
+
+MyActor->DoThing();
+MyActor->DoOtherThing();
+
+UE_LOG(LogTemp, Display, TEXT("health: %d"), *HealthPtr);
+// será que health ainda é 10?
+// se `DoThing()` e `DoOtherThing()` são `const`,
+// sabemos com certeza que é 10!
 ```
 
 # Coisinhas de Unreal
@@ -336,10 +347,6 @@ void AMyActor::MulticastSayHi_Implementation()
 --------------------
 
 ## topicos
-- const
-	- const ptr, const data
-		- regrinha da espiral da declaração
-	- const method
 - memória
 	- alocadores
 	- TArray com alocador geral e inline

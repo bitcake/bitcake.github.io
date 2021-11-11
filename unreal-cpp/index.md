@@ -251,6 +251,39 @@ UE_LOG(LogTemp, Display, TEXT("health: %d"), *HealthPtr);
 // sabemos com certeza que é 10!
 ```
 
+## _Pitfalls_ pra ficar de olho
+
+### Construtor não default na _stack_
+Se você quer criar um valor na _stack_ (sem alocação dinâmica) chamando um construtor que recebe parâmetros,
+cuidado para não acabar chamando o construtor de cópia sem querer:
+
+```cpp
+// aqui chamamos o construtor que recebe 3 floats
+// e em seguida chamamos o construtor de cópia
+// para passar esse valor temporário construído
+// para a nossa variável `Position`
+FVector Position = FVector(0.0f, 0.0f, 1.0f);
+```
+
+```cpp
+// aqui simplesmente inicializamos nossa
+// variável `Position` diretamente chamando
+// o construtor correto nela e nada a mais
+FVector Position(0.0f, 0.0f, 1.0f);
+```
+
+### Divisão de `int`s
+`10` em C++ é *sempre* um número inteiro! Por tanto, quando fazemos `10 / 3`, o resultado é sempre `3`
+(nenhuma casa decimal). Isso mesmo que a variável que está recebendo a expressão seja `float`!
+
+Se quiser `float`s literais, sempre ponha o `.0f` no final!
+
+Ex:
+```cpp
+float r1 = 10 / 3; // r1 = 3.0f
+float r2 = 10.0f / 3.0f // r2 = 3.333333f
+```
+
 # Coisinhas de Unreal
 
 ## `UPROPERTY()`
@@ -377,16 +410,45 @@ void AMyActor::MulticastSayHi_Implementation()
 }
 ```
 
---------------------
+## Containers e Memória
+A Unreal possui um arcabouço de containers template prontos para serem usados.
 
-## topicos
-- memória
-	- alocadores
-	- TArray com alocador geral e inline
-	- usar array simples quando possivel
-	- TArrayView
-- declarações
-	- construtores
-		- stack, copy, etc
-			- `Type MyVar = Type("args");`
+### `TArray<ElementType, AllocatorType>`
+Comparável ao `List<T>` do C#, esse container é suficiente para 95% dos nossos casos de uso.
+
+Se usado como `TArray<ElementType>`, o allocador escolhido é o `FDefaultAllocator` (que herda de `TSizedHeapAllocator`)
+que simplesmente irá alocar os elementos do array na heap. Porém existem outros tipos de alocadores que podem trazer
+ganhos de desempenho se você conhece os dados que está tratando.
+
+Porém sabia que, em geral, as APIs da Unreal que tratam com `TArray` esperam que você use o `TArray` com
+o alocador padrão. Então infelizmente não é sempre que você consegue se livrar de alocações dinâmicas.
+
+### `TInlineAllocator<uint32 N>`
+Esse vai armazenar os primeiros `N` elementos junto do container (na stack se o container foi declarado lá).
+Quando se sabe que na maioria dos casos, o número de elementos nunca passa de um determinado valor razoável,
+podemos usar esse alocador no lugar do padrão.
+
+O interessante é que, se por acaso o número de elementos passar de `N`, ele passa a então a alocar da heap
+automaticamente então o mesmo código consegue tratar alocações grandes.
+
+### `TFixedAllocator<uint32 N>`
+Exatamente a mesma coisa que o `TInlineAllocator` porém a alocação falha caso tente alocar mais de `N` elementos.
+Apenas use esse alocador quando você tem certeza que o número de elementos nunca passará de `N`.
+
+Nesse ponto, considere também usar um array padrão de C++ no lugar.
+
+### `FHeapAllocator`
+O alocador padrão que irá sempre pegar memória da heap. Sempre irá funcionar, porém sempre será o mais pesado.
+
+### `TArrayView<ElementType>`
+Quando você quer passar uma lista de elementos para uma função que somente irá lê-los (ao inves de remover ou adicionar
+elementos à coleção), você pode usar o `TArrayView` no lugar. Essa interface permite que a função use a variável
+como se fosse um array _readonly_ e, ao mesmo tempo, é compatível com `TArray`s de qualquer alocador e até mesmo
+arrays padrão de C++.
+
+Outro motivo para usar esse tipo nas funções é que fica bem claro pela assinatura que a função apneas irá
+_ler_ os elementos e nunca adicionar ou remover. Parecido com os motivos de usar `const`.
+
+Porém infelizmente não é possível usar esse tipo em funções que são chamáveis por Blueprint ou RPCs (nesses
+casos é sempre `TArray` com o alocador padrão).
 

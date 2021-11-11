@@ -7,6 +7,39 @@ mas é um bom começo.
 
 # Coisinhas de C++
 
+## Tipos básicos
+
+### `int`
+Curiosamente, o _standard_ do C/C++ não define os tamanhos de `int`, `short int`, `long int` e nem mesmo `char`.
+Para lidar com isso, a Unreal define os tipos `int8`, `int16`, `int32`, `int64` para números inteiros e, similarmente,
+`uint8`, `uint16`, `uint32` e `uint64` para números naturais.
+
+Prefira sempre utilizar esses tipos ao inves dos padrões pois isso nos dá garantia de quantos bits realmente estamos usando
+principalmente quando se tratar de *armazenar* dados (i.e. um campo de inteiro em uma classe sua, etc) .
+
+### `bool`
+Igualmente, C++ não define o tamanho que um `bool` ocupa (pode ser 1 byte, pode ser 4 bytes, pode ser um valor maluco).
+Por conta disso que quando fazemos uma `UPROPERTY()` booleana, costumamos declará-la como:
+
+```cpp
+UPROPERTY(...)
+uint32 bSomeFlag : 1;
+```
+
+O `: 1` depois do nome do campo significa que aquele `int` usa apenas `1 bit` em sua representação armazenada (dentro da classe).
+Isso é coisa de C/C++ mesmo, e deve permitir a Unreal fazer otimizações quando estiver serializando a classe (tanto pra disco
+como pra networking também).
+
+Ainda assim, é comum ver funções retornando `bool` na base de código da Unreal. Nesses casos é tudo bem pois são apenas
+valores temporários e não estão sendo armazenados em nenhuma `UPROPERTY()`.
+
+Então a dica é usar `bool` quando for valor temporário e, quando for criar uma `UPROPERTY()`, use o idioma `uint32 bMyBool : 1;`.
+
+### `float`
+Igualmente curioso é que o _standard_ também não define o tamanho de `float` e `double` em C/C++.
+Porém, como basicamente toda plataforma suportada pela Unreal possui uma unidade de processamento de `float` que
+seguem o padrão `IEEE-754`, acaba que sabemos a priori que `float`s são 32 bits e `double`s, 64 bits.
+
 ## `#include "SomeHeaderFile.h"`
 Para o compilador C++, um arquivo ter extensão `.h` ou `.cpp` ou `.macaco` não faz diferença.
 O que acontece por trás dos panos é que o compilador vai processar individualmente (em geral em paralelo) cada

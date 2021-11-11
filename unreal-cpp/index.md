@@ -92,7 +92,120 @@ void AMyActor::BeginPlay()
 ```
 
 ## Ponteiros*
+Ponteiros podem ser interpretados como números.
+Números que representam um endereço de memória que *pode* conter dados úteis.
 
+O *pode* é porque às vezes ponteiros são nulos (`nullptr`) ou pior: apontam para
+memória não mais válida (que pode ou não causar _crash_ quando acessada).
+
+Trabalhando com ponteiros é útil pensar em quem é *dono* dos dados apontados.
+Isso porque geralmente podemos inferir o _lifetime_ dos dados a partir dessa informação.
+
+Saber o _lifetime_ dos dados apontados é importante pois se um ponteiro vive mais
+que os dados apontados, *coisas estranhas* podem acontecer ao tentar acessá-lo.
+
+No caso da Unreal, você pode categorizar ponteiros em três _lifetime_ possíveis:
+
+- _static_: objetos que sempre estão lá (ex: data assets e globais)
+- _self_: objetos que têm o mesmo lifetime que o objeto que contêm o ponteiro (ex: actor que tem ponteiro para um componente próprio)
+- _unknown_: objetos cujo _lifetime_ não é sabido previamente (ex: actor que tem ponteiro para outro actor que pode ser destruído a qualquer momento)
+
+#### Ex de um ponteiro que vive mais que os dados apontados:
+- actor A guarda um ponteiro para actor B
+- actor B é destruído por qualquer motivo
+- o ponteiro que A guarda ainda contém o endereço de memória onde o actor B estava
+- mesmo o ato de chamar `IsValid()` pode crashar o jogo pois estaríamos acessando memória inválida
+
+#### Ex de um ponteiro que vive tanto quanto os dados apontados:
+- actor A guarda um ponteiro para um componente seu
+- quando o actor A é destruído, seu componente também é
+- porém tudo bem pois o ponteiro também não será mais acessado!
+
+Dificilmente um ponteiro que se encontra em um dos dois primeiros casos irá apontar para memória inválida.
+Porém o terceiro caso é onde o perigo se encontra e há basicamente duas formas de se proteger:
+- saber exatamente o momento que os dados apontados são destruídos e invalidar os ponteiros imediatamente (botando pra `nullptr` por exemplo)
+	- pra isso você precisará ter controle absoluto de todos os ponteiros que apontavam para o recurso e saber exatamente quando este é destruído
+- usar um `TWeakObjectPtr` e sempre checar se o ponteiro é válido antes de usá-lo
+	- o `TWeakObjectPtr` é específico para objetos da Unreal (`UObject`)
+	- esses ponteiros têm conhecimendo do garbage collector da Unreal e por isso conseguem saber quando o ponteiro não aponta mais para dados válidos
+
+### Ponteiros vs Referências
+Outro aspecto que C++ possui é referências. Estas são extramemente semelhante a ponteiros com apenas algumas diferenças:
+- referências *sempre* são inicializadas durante a declaração
+	- uma classe com um campo referência precia que todos os seus contrutores inicializem as referencias *antes* do corpo do construtor
+		- `MyActor::MyActor() : MyRef(InitializationExpression) { /* constructor body */ }`
+- é invisível em uma chamada de função se ela está recebendo os argumentos por valor ou por referencia
+	- `int Result = DoCalculation(MyMatrix); // por valor ou por referencia?? vai saber!!`
+
+Principalmente por conta do segundo ponto, eu recomendo *muito* que caso forem criar uma função que recebe
+uma refência, que seja uma referência para dados que não mudam (`const`). Porque desse modo, meio que não
+importa a resposta de se o paraâmetro é por valor ou por referencia já que o argumento passado garantidamente*
+não terá seu valor alterado pela função.
+
+[*] Mentira, não é garantido. Isso porque a função pode ter sido implementada *na malandrage* por fazer
+uns casts que removem o `const` e ainda assim alterar os valores sem você saber.
+Mas aí a gente dá um voto de confiança que não tem ninguém tentando sabotar o seu trabalho, né :')
+
+Por fim, ponteiros são bem mais comuns em bases de código de projetos Unreal.
+Então sugiro seguir com os padrões que a engine usa.
+
+## `const`
+Marcar algo como `const` significa que aquele valor não vai mudar (você promete pro compilador que não vai mexer com
+aquele valor e ele vai acreditar em você!).
+
+Const é bem útil em dois casos:
+- ponteiros que apenas irão ler os dados apontados
+- métodos que não alteram os campos da classe
+
+### `const Thing*`
+`const UActorComponent* MyComponent` ou `UActorComponent const* MyComponent` significam que `MyComponent` é um ponteiro
+que apenas pode ler o `UActorComponent` para o qual aponta.
+
+É útil saber que um ponteiro é `const` pois:
+- em parâmetros de função significa que você sabe que aquela função *não* irá alterar os argumentos que você passa pra ela
+- em retornos de métodos significa que você pode emprestar um dado interno da sua classe com a certeza que ele não será alterado
+- em classes significa que você sabe que uma instância *jamais* irá alterar os dados apontados
+
+### Método `const`
+Método marcado como `const` nada mais é que um método cujo `this` é `const`. Ou seja, você não pode alterar
+os dados da classe de dentro de um método `const`.
+
+Isso é útil pois alguém chamando um método de sua classe sabe com certeza apenas olhando a assinatura do método
+que ele não irá alterar o estado da classe.
+
+Ex:
+```cpp
+// .h
+UCLASS()
+class AMyActor : AActor
+{
+	GENERATED_BODY()
+public:
+	bool IsAlive() const;
+private:
+	uint32 Health;
+}
+
+// .cpp
+// OK
+bool AMyActor::IsAlive() const
+{
+	return Health > 0;
+}
+
+// ERROR
+bool AMyActor::IsAlive() const
+{
+	Health *= 2; // não pode alterar valor
+	return Health > 0;
+}
+```
+
+### sempre que possível, use `const`
+Quando lendo código, `const` diminui a quantidade de coisas a serem consideradas e, portanto, facilitam sua compreensão.
+
+```cpp
+```
 
 # Coisinhas de Unreal
 
@@ -105,7 +218,7 @@ UPROPERTY()
 UPrimitiveComponent* MyComponent;
 ```
 
-Importante para campos que são ponteiros para `UObject` que ajuda o GarbageCollector da Unreal saber
+Importante para campos que são ponteiros para `UObject` que ajuda o garbage collector da Unreal saber
 quando ainda tem referencia para um determinado objeto.
 
 ### `UPROPERTY(Transient)`
@@ -223,14 +336,6 @@ void AMyActor::MulticastSayHi_Implementation()
 --------------------
 
 ## topicos
-- recap ponteiros
-	- "stale pointer"
-		- casos comuns
-			- "guardar um ponteiro vindo do actor em um component dentro de seu construtor"
-		- quando o IsValid pode falhar
-	- vs referencias
-		- evitar usar referencias não const
-	- TWeakObjPtr<T>
 - const
 	- const ptr, const data
 		- regrinha da espiral da declaração

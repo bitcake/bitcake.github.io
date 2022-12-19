@@ -6,18 +6,18 @@ O recomendado pela Epic é usar o Visual Studio.
 Pra isso vamos instalar o Visual Studio Community que é a versão gratuita que serve pro nosso propósito.
 
 ### Instalação
-- Acesse https://visualstudio.microsoft.com/vs/community/ e clique no botão de 'Download'
-- Execute o `vs_Community.exe` baixado
+- Acesse [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/) e clique no botão de 'Download'
+- Execute o `VisualStudioSetup.exe` baixado
 - Depois que carregar a interface, vá para a aba "Individual Components"
 - Marque ".NET Framework 4.6.2 SDK"
-- Marque ".NET Framework 4.6.2 Targeting Pack"
+- Marque ".NET Framework 4.6.2 Targeting Pack" (ou "Pacote de Direcionamento 4.6.2" ou parecido)
 - ![.net framework](visual-studio-net-framework.png)
 - Procure por uma entrada parecida com "MSVC VS-2019 C++ x64/x86 build tools (Latest)" e marque-a
 - ![msvc](visual-studio-msvc.png)
-- Marque o "Windows 10 SDK" com a maior versão
+- Marque o "Windows 10 SDK" com a maior versão (10 mesmo! nada de 11 ainda!)
 - ![windows-sdk](visual-studio-windows-sdk.png)
 - "Install"
-- Se aparecer uma tela tentando te convencer a instalar um "Workload" você pode simplesmente clicar em "Continue"
+- Se aparecer uma tela tentando te convencer a instalar um "Workload" (ou "Cargas de Trabalho") você pode simplesmente clicar em "Continue"
 - Aguarde bastante (demora mesmo)
 - Uma vez que terminar o processo, pode fechar as janelas (não precisa logar com uma conta da Microsoft mesmo que ela insista bastante)
 
